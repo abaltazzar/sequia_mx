@@ -2243,7 +2243,13 @@
         "Suggests": "knitr,\nquarto,\nreadr,\nreadxl,\nrmapshaper,\nrmarkdown,\ntestthat (>= 3.0.0),\nusethis",
         "Config/testthat/edition": "3",
         "VignetteBuilder": "knitr",
-        "Config/roxygen2/version": "8.1.0"
+        "Config/roxygen2/version": "8.1.0",
+        "RemoteType": "github",
+        "RemoteHost": "api.github.com",
+        "RemoteUsername": "abaltazzar",
+        "RemoteRepo": "sequia_mx",
+        "RemoteRef": "main",
+        "RemotePkgRef": "abaltazzar/sequia_mx"
       }
     },
     "sf": {
