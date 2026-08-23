@@ -4,7 +4,7 @@
 \alias{rachas_sequia}
 \title{Rachas (eventos) de sequía por municipio}
 \usage{
-rachas_sequia(datos = sequiaMX::sequia_municipal, umbral = "D1")
+rachas_sequia(datos = sequia_municipal, umbral = "D1")
 }
 \arguments{
 \item{datos}{Tabla larga, normalmente \code{sequia_municipal}.}

@@ -1,41 +1,194 @@
 ---
 title: "Sequía en México"
 subtitle: "Monitor de Sequía CONAGUA–SMN, 2003 a la fecha"
+author: "Alberto Baltazar"
 lang: es
 format:
   html:
     toc: true
+    toc-depth: 2
     embed-resources: true
+    theme: cosmo
+    fig-width: 10
+    fig-height: 4.5
 execute:
   echo: false
   warning: false
+  message: false
 ---
 
-```{r}
+```{r setup}
 library(sequiaMX)
 library(dplyr)
+library(ggplot2)
+library(sf)
+library(knitr)
+
 corte <- fecha_corte()
-nac <- resumen_entidad(nivel_geo = "nacional")
-hoy <- filter(nac, fecha == corte)
-pct <- function(desde) sprintf("%.1f %%", 100 * sum(hoy$proporcion[hoy$categoria >= desde]))
+fmt_pct <- function(x) sprintf("%.1f %%", 100 * x)
+fmt_n   <- function(x) format(round(x), big.mark = ",")
+fmt_f   <- function(f) format(f, "%d de %B de %Y")
+p_desde <- function(r, d) sum(r$proporcion[r$categoria >= d])
+
+nac     <- resumen_entidad(nivel_geo = "nacional")
+nac_sup <- resumen_entidad(peso = "superficie", nivel_geo = "nacional")
+nac_pob <- resumen_entidad(peso = "poblacion",  nivel_geo = "nacional")
+hoy     <- filter(nac, fecha == corte)
+hoy_sup <- filter(nac_sup, fecha == corte)
+hoy_pob <- filter(nac_pob, fecha == corte)
+
+d1_nac <- nac |> filter(categoria >= "D1") |> group_by(fecha) |> summarise(p = sum(proporcion), .groups = "drop")
+d3_nac <- nac |> filter(categoria >= "D3") |> group_by(fecha) |> summarise(p = sum(proporcion), .groups = "drop")
+pico   <- d1_nac |> slice_max(p, n = 1, with_ties = FALSE)
 ```
 
-Al corte del **`r format(corte, "%d de %B de %Y")`**, `r pct("D1")` de los
-`r nrow(catalogo_municipios)` municipios del país estaban en sequía (D1 a D4) y
-`r pct("D3")` en sequía extrema o excepcional.
+## Resumen
 
-## Evolución nacional
+Al corte del **`r fmt_f(corte)`**, `r fmt_pct(p_desde(hoy, "D1"))` de los `r fmt_n(nrow(catalogo_municipios))` municipios del país estaban en sequía (D1 a D4) y `r fmt_pct(p_desde(hoy, "D3"))` en sequía extrema o excepcional. Esos municipios representan `r fmt_pct(p_desde(hoy_sup, "D1"))` de la superficie nacional y `r fmt_pct(p_desde(hoy_pob, "D1"))` de la población. Otro `r fmt_pct(hoy$proporcion[hoy$categoria == "D0"])` de los municipios se encontraba anormalmente seco (D0).
 
-```{r}
-#| fig-width: 10
-#| fig-height: 4
+El máximo histórico de la serie ocurrió el `r fmt_f(pico$fecha)`, cuando `r fmt_pct(pico$p)` de los municipios estaba en sequía.
+
+::: {.callout-note}
+La unidad de análisis es el municipio. Las cifras nacionales y estatales son proporciones de municipios; cuando se indican superficie o población, son la suma de la superficie o población de los municipios afectados. "En sequía" significa categoría D1 o peor; D0 se reporta por separado. Detalles en la sección de metodología.
+:::
+
+## Panorama nacional
+
+```{r serie-nacional}
+#| fig-cap: "Proporción de municipios por categoría del Monitor, 2003 a la fecha. Mensual hasta enero de 2014, quincenal desde entonces."
 graficar_serie(nac, fecha_marcada = corte)
 ```
 
-## Distribución actual
-
-```{r}
+```{r dona}
+#| fig-width: 6
+#| fig-height: 4
+#| fig-cap: "Distribución de municipios por categoría en el corte más reciente."
 graficar_dona(hoy, titulo = format(corte, "%d %b %Y"))
 ```
 
-<!-- Secciones pendientes: por entidad, por cuenca, rachas, superficie y población -->
+### Mapa del corte actual
+
+```{r mapa}
+#| fig-height: 7
+#| fig-cap: "Categoría de sequía por municipio."
+municipios_sf |>
+  left_join(filter(sequia_municipal, fecha == corte), by = "cvegeo") |>
+  ggplot() +
+  geom_sf(aes(fill = categoria), colour = "white", linewidth = 0.05) +
+  scale_fill_manual(values = colores_sequia, labels = etiquetas_sequia, drop = FALSE) +
+  labs(fill = NULL, title = format(corte, "%d %b %Y")) +
+  theme_void() +
+  theme(legend.position = "bottom")
+```
+
+## Episodios históricos
+
+Cada año se identifica el corte con mayor proporción de municipios en sequía.
+
+```{r episodios}
+d1_nac |>
+  left_join(d3_nac, by = "fecha", suffix = c("_d1", "_d3")) |>
+  mutate(anio = as.integer(format(fecha, "%Y"))) |>
+  group_by(anio) |>
+  slice_max(p_d1, n = 1, with_ties = FALSE) |>
+  ungroup() |>
+  transmute(Año = anio, `Fecha del máximo` = format(fecha, "%d %b"),
+            `Municipios en D1+` = fmt_pct(p_d1), `Municipios en D3+` = fmt_pct(p_d3)) |>
+  kable(align = "lrrr")
+```
+
+## Entidades federativas
+
+```{r heatmap-entidad}
+#| fig-height: 8
+#| fig-cap: "Proporción de municipios en sequía (D1 o peor) por entidad y corte. Las entidades se ordenan por su promedio histórico."
+ent_d1 <- resumen_entidad(nivel_geo = "entidad") |>
+  filter(categoria >= "D1") |>
+  group_by(entidad, fecha) |>
+  summarise(p = sum(proporcion), .groups = "drop")
+orden <- ent_d1 |> group_by(entidad) |> summarise(m = mean(p)) |> arrange(m) |> pull(entidad)
+fechas <- sort(unique(ent_d1$fecha))
+ancho <- c(as.numeric(diff(fechas)), 15)
+ent_d1 |>
+  left_join(data.frame(fecha = fechas, w = ancho), by = "fecha") |>
+  mutate(entidad = factor(entidad, levels = orden)) |>
+  ggplot(aes(x = fecha + w / 2, y = entidad, fill = p, width = w)) +
+  geom_tile() +
+  scale_fill_gradient(low = "#FFFFFF", high = "#B8420F", labels = scales::label_percent(), limits = c(0, 1)) +
+  scale_x_date(date_labels = "%Y", expand = c(0, 0)) +
+  labs(x = NULL, y = NULL, fill = "Municipios\nen D1+") +
+  theme_minimal(base_size = 11) +
+  theme(panel.grid = element_blank())
+```
+
+### Situación actual por entidad
+
+```{r tabla-entidades}
+ent_hoy <- function(peso) {
+  resumen_entidad(peso = peso, nivel_geo = "entidad", fechas = corte) |>
+    filter(categoria >= "D1") |>
+    group_by(entidad) |>
+    summarise(p = sum(proporcion), .groups = "drop")
+}
+ent_hoy("municipios") |>
+  left_join(ent_hoy("superficie"), by = "entidad", suffix = c("_mun", "_sup")) |>
+  left_join(ent_hoy("poblacion"), by = "entidad") |>
+  arrange(desc(p_mun)) |>
+  transmute(Entidad = entidad, `Municipios en D1+` = fmt_pct(p_mun),
+            `Superficie en D1+` = fmt_pct(p_sup), `Población en D1+` = fmt_pct(p)) |>
+  kable(align = "lrrr")
+```
+
+## Organismos de cuenca
+
+```{r cuencas}
+resumen_entidad(nivel_geo = "org_cuenca", fechas = corte) |>
+  filter(categoria >= "D1") |>
+  group_by(org_cuenca) |>
+  summarise(`Municipios en D1+` = fmt_pct(sum(proporcion)), Municipios = sum(n), .groups = "drop") |>
+  arrange(desc(`Municipios en D1+`)) |>
+  rename(`Organismo de cuenca` = org_cuenca) |>
+  kable(align = "lrr")
+```
+
+## Duración de los eventos
+
+```{r rachas}
+rachas <- rachas_sequia(umbral = "D1") |>
+  left_join(select(catalogo_municipios, cvegeo, nombre_mun, entidad), by = "cvegeo")
+rachas |>
+  slice_max(duracion_dias, n = 15) |>
+  transmute(Municipio = nombre_mun, Entidad = entidad,
+            Inicio = format(inicio, "%d %b %Y"), Fin = format(fin, "%d %b %Y"),
+            `Duración (días)` = fmt_n(duracion_dias), `Categoría máxima` = as.character(categoria_max)) |>
+  kable(align = "llllrr", caption = "Los 15 eventos de sequía (D1 o peor) más largos desde 2003.")
+```
+
+```{r cronicos}
+#| fig-height: 7
+#| fig-cap: "Proporción del tiempo (2003 a la fecha) que cada municipio ha pasado en sequía (D1 o peor)."
+fechas_all <- fechas_disponibles()
+dias <- data.frame(fecha = fechas_all, d = as.numeric(c(diff(fechas_all), 15)))
+cronico <- sequia_municipal |>
+  left_join(dias, by = "fecha") |>
+  group_by(cvegeo) |>
+  summarise(p = sum(d[categoria >= "D1"]) / sum(d), .groups = "drop")
+municipios_sf |>
+  left_join(cronico, by = "cvegeo") |>
+  ggplot() +
+  geom_sf(aes(fill = p), colour = NA) +
+  scale_fill_gradient(low = "#FFFFFF", high = "#730000", labels = scales::label_percent()) +
+  labs(fill = "Tiempo\nen D1+") +
+  theme_void()
+```
+
+## Metodología
+
+- **Fuente.** CONAGUA–SMN, Monitor de Sequía en México, archivo `MunicipiosSequia.xlsx`, corte del `r fmt_f(corte)`. Cortes mensuales de enero de 2003 a enero de 2014 y quincenales desde el 15 de febrero de 2014; no se elaboró en agosto de 2003 ni en febrero de 2004.
+- **Unidad de análisis.** El municipio. Las proporciones estatales y nacionales son de municipios; las de superficie y población son sumas de la superficie (INEGI, Marco Geoestadístico 2025, proyección Albers) y la población (CONAPO, estimación a mitad de año del año del corte) de los municipios en cada categoría.
+- **"En sequía".** Categoría D1 o peor. D0 (anormalmente seco) se reporta por separado, siguiendo la convención del Monitor.
+- **Duración.** Se mide en días calendario entre cortes, no en número de registros, para que el cambio de frecuencia de 2014 no sesgue las comparaciones.
+- **Municipios nuevos.** 21 municipios creados en 2019, 2022 y 2026 heredan el historial del municipio del que se separaron. Se conservan los 2,478 municipios actuales en toda la serie.
+- **Población.** 1990–2019 es conciliación demográfica y 2020 en adelante es proyección (CONAPO, 2024). Tres municipios creados en 2025 no tienen estimación propia.
+
+Código y datos: [github.com/abaltazzar/sequia_mx](https://github.com/abaltazzar/sequia_mx). Paquete `sequiaMX` v`r as.character(packageVersion("sequiaMX"))`.

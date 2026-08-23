@@ -4,17 +4,26 @@
 \alias{graficar_serie}
 \title{Serie temporal apilada por categoría}
 \usage{
-graficar_serie(resumen, rango = NULL, fecha_marcada = NULL, titulo = NULL)
+graficar_serie(
+  resumen,
+  rango = NULL,
+  fecha_marcada = NULL,
+  titulo = NULL,
+  por = NULL
+)
 }
 \arguments{
-\item{resumen}{Salida de \code{\link[=resumen_entidad]{resumen_entidad()}} para una sola unidad geográfica
-(por ejemplo \code{nivel_geo = "nacional"}, o filtrada a una entidad).}
+\item{resumen}{Salida de \code{\link[=resumen_entidad]{resumen_entidad()}}. Si contiene varias unidades
+(por ejemplo varias entidades), indica la columna en \code{por}.}
 
 \item{rango}{Vector de dos fechas para acotar el eje; \code{NULL} muestra todo.}
 
 \item{fecha_marcada}{Fecha opcional que se resalta con una línea vertical.}
 
 \item{titulo}{Título de la gráfica.}
+
+\item{por}{Nombre de la columna que define los paneles (p. ej. \code{"entidad"});
+\code{NULL} para una sola serie.}
 }
 \value{
 Objeto ggplot.

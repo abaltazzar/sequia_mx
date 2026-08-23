@@ -19,9 +19,9 @@ graficar_serie <- function(resumen, rango = NULL, fecha_marcada = NULL, titulo =
   }
   peso <- unique(resumen$peso)
   eje_y <- switch(peso,
-    municipios = "Proporción de municipios",
-    superficie = "Proporción de la superficie",
-    poblacion  = "Proporción de la población"
+    municipios = "Proporci\u00f3n de municipios",
+    superficie = "Proporci\u00f3n de la superficie",
+    poblacion  = "Proporci\u00f3n de la poblaci\u00f3n"
   )
 
   # Cada barra ocupa exactamente el intervalo entre su fecha y la siguiente,

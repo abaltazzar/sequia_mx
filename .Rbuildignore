@@ -1,2 +1,16 @@
 ^renv$
 ^renv\.lock$
+^CONFIGURAR\.md$
+^\.posit$
+^inst/README\.md$
+^tests/README\.md$
+^vignettes/README\.md$
+^inst/shiny/manifest\.json$
+^inst/shiny/sequiaMX_local$
+^\.Renviron$
+^\.github$
+^cambios$
+^inst/shiny/\.posit$
+^LICENSE\.md$
+^data-raw$
+^.*\.Rproj$

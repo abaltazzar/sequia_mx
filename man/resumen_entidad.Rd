@@ -5,7 +5,7 @@
 \title{Resumen de sequía por unidad geográfica y fecha}
 \usage{
 resumen_entidad(
-  datos = sequiaMX::sequia_municipal,
+  datos = sequia_municipal,
   peso = c("municipios", "superficie", "poblacion"),
   nivel_geo = c("entidad", "nacional", "org_cuenca", "con_cuenca"),
   fechas = NULL

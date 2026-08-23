@@ -1,58 +1,41 @@
-# Primeros pasos en Positron
+# Guía de trabajo — sequia_mx
 
-1. Descomprime el contenido directamente en `~/GitHub/sequia_mx` y abre la carpeta en Positron.
-2. En la consola de R:
+## Rutina de actualización (cada corte quincenal de CONAGUA)
 
-```r
-install.packages(c("devtools", "usethis", "renv", "pak"))
-pak::pak(c("dplyr","tidyr","stringr","lubridate","rlang","scales","sf","ggplot2",
-           "readxl","readr","rmapshaper","shiny","bslib","bsicons","leaflet","DT",
-           "htmltools","testthat","knitr","rmarkdown","quarto"))
-```
-
-3. Copia las fuentes a `data-raw/`: `MunicipiosSequia.xlsx` y `pobproy_inddemo.csv`.
-   Crea un archivo `.Renviron` en la raíz del proyecto (ya está en `.gitignore`) con:
-
-   ```
-   SEQUIAMX_MGN=/Users/albertobaltazar/datos_geo_mx/mg_2025/mg_2025_integrado.zip
-   ```
-
-   Reinicia R y verifica:
-
-   ```r
-   file.exists(Sys.getenv("SEQUIAMX_MGN"))   # TRUE
-   ```
-
-4. Genera los datos, en orden:
+En la consola de R, con el proyecto abierto:
 
 ```r
-source("data-raw/00_generar_datos.R")
+source("data-raw/00_generar_datos.R")   # descarga CONAGUA si cambió, regenera datos y la app
+devtools::test()                         # todo en verde
 ```
 
-(Corre los tres scripts de limpieza en orden y avisa en cuál falla, si alguno.)
+En la Terminal:
 
-5. Documenta, carga y prueba:
-
-```r
-devtools::document()
-devtools::load_all()
-devtools::test()
+```bash
+git add . && git commit -m "Actualiza datos CONAGUA" && git push
 ```
 
-6. Ejecuta la app y el reporte:
+Connect Cloud redespliega la app solo al detectar el push.
 
-```r
-shiny::runApp("inst/shiny")
-quarto::quarto_render("inst/quarto/reporte_sequia.qmd")
-```
+## Primera instalación en otra máquina
 
-7. Fija dependencias y sube a GitHub:
+1. Clonar el repo y abrir la carpeta en Positron.
+2. Instalar dependencias: `pak::pak(c("devtools", "usethis", "pak"))` y luego `pak::local_install_deps(dependencies = TRUE)`.
+3. Copiar `pobproy_inddemo.csv` (CONAPO) a `data-raw/`. El xlsx de CONAGUA se descarga solo.
+4. Crear `.Renviron` con la ruta al Marco Geoestadístico (zip o carpeta):
+   `writeLines("SEQUIAMX_MGN=/ruta/a/mg_2025_integrado.zip", ".Renviron")` y reiniciar R.
+5. `source("data-raw/00_generar_datos.R")`, `devtools::document()`, `devtools::test()`.
 
-```r
-renv::init()
-usethis::use_git()
-# El repo ya existe en GitHub:
-# git remote add origin https://github.com/abaltazzar/sequia_mx.git
-# git push -u origin main
-```
+## Desarrollo diario
 
+- Cargar el paquete sin instalar: `devtools::load_all()`.
+- Probar la app: `shiny::runApp("inst/shiny")`.
+- Renderizar el reporte: `quarto::quarto_render("inst/quarto/reporte_sequia.qmd")`.
+- Revisar el paquete como lo hace GitHub: `devtools::check()`.
+
+## Reglas que evitan dolores de cabeza
+
+- **Cierra en el editor cualquier archivo que se modifique desde la consola** (por ejemplo con `writeLines`). Si el editor lo tiene abierto y guardas después, sobreescribe el cambio.
+- No hagas `devtools::install()` salvo que lo necesites; `load_all()` basta para trabajar.
+- Las carpetas `R`, `data`, `inst`, `tests`, `vignettes`, `man` tienen esos nombres porque R lo exige. `data-raw` produce `data`; `R` usa `data`; `inst` usa `R`.
+- Si cambias funciones en `R/` o datos, corre `source("data-raw/04_preparar_app.R")` para que la copia que usa Connect Cloud se actualice (lo hace solo `00_generar_datos.R`).

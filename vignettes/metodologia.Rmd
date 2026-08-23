@@ -1,0 +1,34 @@
+---
+title: "Metodología"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Metodología}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Fuentes
+
+**Monitor de Sequía en México** (CONAGUA–SMN). Clasifica cada municipio en una de cinco categorías, de D0 (anormalmente seco) a D4 (sequía excepcional), o sin sequía. Es un producto derivado: el Monitor dibuja polígonos continuos de sequía a partir de índices climáticos y a cada municipio se le asigna la categoría predominante en su territorio. Cortes mensuales de enero de 2003 a enero de 2014 y quincenales desde el 15 de febrero de 2014. No se elaboró en agosto de 2003 ni febrero de 2004.
+
+**Marco Geoestadístico Nacional 2025** (INEGI). Geometría municipal, de la que se deriva la superficie en proyección cónica de áreas equivalentes de Albers (parámetros CONABIO para México). La geometría incluida en el paquete está simplificada para mapas; la superficie se calcula sobre la geometría original.
+
+**Reconstrucción y proyecciones de la población de los municipios de México 1990–2040** (CONAPO, 2024). Población a mitad de año. 1990–2019 es conciliación demográfica retrospectiva; 2020 en adelante es proyección. Incluye los municipios creados en 2019 y 2022 con serie reconstruida; no incluye los tres creados en 2025 (Villa de Pozos, Eldorado, Juan José Ríos).
+
+## Decisiones
+
+**El municipio es la unidad de análisis.** Una cifra como "27 % en D0" significa 27 % de los municipios, no 27 % del territorio ni de la población. Se evita promediar categorías para "calificar" a un estado; en su lugar se reporta la distribución completa, la categoría predominante (modal) o la proporción en D1 o peor.
+
+**Superficie y población como complemento.** `resumen_entidad(peso = "superficie")` y `peso = "poblacion"` suman la superficie o población de los municipios en cada categoría. Responden preguntas distintas ("cuánto territorio", "cuánta gente") y se etiquetan siempre como tales. La población se toma del año del corte.
+
+**"En sequía" es D1 o peor.** D0 se reporta aparte, como hace el propio Monitor.
+
+**El tiempo se mide en días.** Cada registro representa el intervalo hasta el siguiente corte (aprox. 30 días hasta 2014, 15 después). Duraciones de eventos y proporciones de tiempo en sequía se calculan sobre esos días, no sobre el número de registros.
+
+**Municipios nuevos.** Los marcados con asteriscos en el archivo de CONAGUA (ediciones 2018, 2021 y 2025 del MGN) heredan el historial del municipio del que se separaron. Se conservan los 2,478 municipios actuales en toda la serie; `catalogo_municipios$fecha_alta` permite excluirlos antes de su creación si se desea.
+
+**Organismos de cuenca.** Asignados por CONAGUA conforme a las Regiones Hidrológico-Administrativas de 2023.
+
+## Lo que el paquete no hace
+
+No calcula índices climáticos ni reproduce el Monitor; parte de su clasificación publicada. No estima la proporción de sequía dentro de un municipio. No declara "estados en sequía": no existe un umbral oficial, y cualquier corte (por ejemplo, más del 50 % de municipios en D1+) es una convención que debe explicitarse.

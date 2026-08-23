@@ -18,6 +18,13 @@ Roxygen: list(markdown = TRUE)
 Depends:
     R (>= 4.1)
 Imports:
+    dplyr,
+    ggplot2,
+    rlang,
+    scales,
+    sf,
+    tidyr
+Suggests:
     bsicons,
     bslib,
     DT,
@@ -25,15 +32,10 @@ Imports:
     leaflet,
     remotes,
     shiny,
-    dplyr,
-    ggplot2,
     lubridate,
-    rlang,
-    scales,
-    sf,
     stringr,
-    tidyr
-Suggests:
+    httr2,
+    fs,
     knitr,
     quarto,
     readr,
