@@ -15,8 +15,8 @@ pkg <- "sequiaMX"
 if (requireNamespace(pkg, quietly = TRUE)) {
   library(pkg, character.only = TRUE)
 } else {
-  for (f in list.files("sequiaMX_local/R", pattern = "\\.R$", full.names = TRUE)) source(f)
-  for (f in list.files("sequiaMX_local/data", pattern = "\\.rda$", full.names = TRUE)) load(f)
+  for (f in list.files("sequiaMX_local/R", pattern = "\\.R$", full.names = TRUE)) source(f, local = TRUE)
+  for (f in list.files("sequiaMX_local/data", pattern = "\\.rda$", full.names = TRUE)) load(f, envir = environment())
 }
 
 # ---- Datos estáticos ------------------------------------------------------
