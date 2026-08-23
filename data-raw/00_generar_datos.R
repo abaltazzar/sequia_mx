@@ -1,9 +1,13 @@
 # data-raw/00_generar_datos.R
-# Corre el pipeline completo de datos: CONAGUA -> CONAPO -> MGN.
+# Corre el pipeline completo de datos: descarga CONAGUA -> limpieza -> CONAPO -> MGN.
 # Uso:  source("data-raw/00_generar_datos.R")
 # Se detiene en el primer error e indica en qué script ocurrió.
 
 stopifnot("Ejecuta desde la raíz del proyecto (donde está DESCRIPTION)" = file.exists("DESCRIPTION"))
+
+# 0. Descargar el xlsx de CONAGUA si cambió (deja hay_cambios en este entorno)
+source("data-raw/00_descargar.R")
+
 stopifnot("Falta data-raw/MunicipiosSequia.xlsx" = file.exists("data-raw/MunicipiosSequia.xlsx"))
 stopifnot("Falta data-raw/pobproy_inddemo.csv"  = file.exists("data-raw/pobproy_inddemo.csv"))
 stopifnot("Define SEQUIAMX_MGN en .Renviron (zip o carpeta del MGN)" = nzchar(Sys.getenv("SEQUIAMX_MGN")))
@@ -12,7 +16,8 @@ stopifnot("La ruta de SEQUIAMX_MGN no existe" = file.exists(Sys.getenv("SEQUIAMX
 pasos <- c(
   "data-raw/01_limpiar_monitor.R",
   "data-raw/02_poblacion_conapo.R",
-  "data-raw/03_geometria_mgn.R"
+  "data-raw/03_geometria_mgn.R",
+  "data-raw/04_preparar_app.R"
 )
 
 for (p in pasos) {
@@ -27,4 +32,4 @@ for (p in pasos) {
 
 message("\nArchivos generados en data/: ",
         paste(list.files("data", pattern = "rda$"), collapse = ", "))
-message("Siguiente paso: devtools::document(); devtools::load_all(); devtools::test()")
+message("Siguiente paso: devtools::load_all(); devtools::test(); luego commit y push")
