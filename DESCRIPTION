@@ -1,0 +1,46 @@
+Package: sequiaMX
+Title: Datos y Análisis del Monitor de Sequía en México
+Version: 0.1.0
+Authors@R:
+    person("Alberto", "Baltazar", , "abaltazar@me.com", role = c("aut", "cre"))
+Description: Datos del Monitor de Sequía en México (CONAGUA-SMN) en formato
+    largo, con catálogo municipal, superficie (INEGI) y población (CONAPO),
+    y funciones para resumir la sequía por municipio, entidad federativa y
+    organismo de cuenca. Incluye un reporte en Quarto y una aplicación Shiny.
+License: MIT + file LICENSE
+URL: https://github.com/abaltazzar/sequia_mx
+BugReports: https://github.com/abaltazzar/sequia_mx/issues
+Encoding: UTF-8
+Language: es
+LazyData: true
+LazyDataCompression: xz
+Roxygen: list(markdown = TRUE)
+Depends:
+    R (>= 4.1)
+Imports:
+    dplyr,
+    ggplot2,
+    lubridate,
+    rlang,
+    scales,
+    sf,
+    stringr,
+    tidyr
+Suggests:
+    bsicons,
+    bslib,
+    DT,
+    htmltools,
+    knitr,
+    leaflet,
+    quarto,
+    readr,
+    readxl,
+    rmapshaper,
+    rmarkdown,
+    shiny,
+    testthat (>= 3.0.0),
+    usethis
+Config/testthat/edition: 3
+VignetteBuilder: knitr
+Config/roxygen2/version: 8.1.0

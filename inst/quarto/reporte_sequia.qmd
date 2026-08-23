@@ -1,0 +1,41 @@
+---
+title: "Sequía en México"
+subtitle: "Monitor de Sequía CONAGUA–SMN, 2003 a la fecha"
+lang: es
+format:
+  html:
+    toc: true
+    embed-resources: true
+execute:
+  echo: false
+  warning: false
+---
+
+```{r}
+library(sequiaMX)
+library(dplyr)
+corte <- fecha_corte()
+nac <- resumen_entidad(nivel_geo = "nacional")
+hoy <- filter(nac, fecha == corte)
+pct <- function(desde) sprintf("%.1f %%", 100 * sum(hoy$proporcion[hoy$categoria >= desde]))
+```
+
+Al corte del **`r format(corte, "%d de %B de %Y")`**, `r pct("D1")` de los
+`r nrow(catalogo_municipios)` municipios del país estaban en sequía (D1 a D4) y
+`r pct("D3")` en sequía extrema o excepcional.
+
+## Evolución nacional
+
+```{r}
+#| fig-width: 10
+#| fig-height: 4
+graficar_serie(nac, fecha_marcada = corte)
+```
+
+## Distribución actual
+
+```{r}
+graficar_dona(hoy, titulo = format(corte, "%d %b %Y"))
+```
+
+<!-- Secciones pendientes: por entidad, por cuenca, rachas, superficie y población -->
