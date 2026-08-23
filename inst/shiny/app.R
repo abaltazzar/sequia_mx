@@ -10,10 +10,14 @@ library(ggplot2)
 library(leaflet)
 library(sf)
 library(DT)
-if (!requireNamespace("sequiaMX", quietly = TRUE)) {
-  remotes::install_github("abaltazzar/sequia_mx", upgrade = "never")
+# Usa el paquete si está instalado; si no, la copia local (Connect Cloud)
+pkg <- "sequiaMX"
+if (requireNamespace(pkg, quietly = TRUE)) {
+  library(pkg, character.only = TRUE)
+} else {
+  for (f in list.files("sequiaMX_local/R", pattern = "\\.R$", full.names = TRUE)) source(f)
+  for (f in list.files("sequiaMX_local/data", pattern = "\\.rda$", full.names = TRUE)) load(f)
 }
-library(sequiaMX)
 
 # ---- Datos estáticos ------------------------------------------------------
 fechas_disp <- fechas_disponibles()
