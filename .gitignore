@@ -2,3 +2,6 @@
 # Ruta local al MGN
 .Renviron
 .DS_Store
+inst/quarto/*.html
+inst/quarto/*_files/
+inst/quarto/.quarto/
