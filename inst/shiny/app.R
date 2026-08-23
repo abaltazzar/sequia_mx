@@ -10,6 +10,9 @@ library(ggplot2)
 library(leaflet)
 library(sf)
 library(DT)
+if (!requireNamespace("sequiaMX", quietly = TRUE)) {
+  remotes::install_github("abaltazzar/sequia_mx", upgrade = "never")
+}
 library(sequiaMX)
 
 # ---- Datos estáticos ------------------------------------------------------

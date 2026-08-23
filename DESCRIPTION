@@ -18,6 +18,13 @@ Roxygen: list(markdown = TRUE)
 Depends:
     R (>= 4.1)
 Imports:
+    bsicons,
+    bslib,
+    DT,
+    htmltools,
+    leaflet,
+    remotes,
+    shiny,
     dplyr,
     ggplot2,
     lubridate,
@@ -27,18 +34,12 @@ Imports:
     stringr,
     tidyr
 Suggests:
-    bsicons,
-    bslib,
-    DT,
-    htmltools,
     knitr,
-    leaflet,
     quarto,
     readr,
     readxl,
     rmapshaper,
     rmarkdown,
-    shiny,
     testthat (>= 3.0.0),
     usethis
 Config/testthat/edition: 3

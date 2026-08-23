@@ -1,0 +1,10 @@
+"$schema" = "https://cdn.posit.co/publisher/schemas/posit-publishing-schema-v3.json"
+type = "r-shiny"
+entrypoint = "inst/shiny/app.R"
+title = "Sequía en México"
+validate = true
+product_type = "connect_cloud"
+
+[r]
+package_file = "renv.lock"
+package_manager = "renv"
